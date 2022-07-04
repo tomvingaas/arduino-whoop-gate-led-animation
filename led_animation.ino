@@ -4,10 +4,10 @@
 //WS2812 LED Strip
 //arduino
 
-#define NUM_LEDS 45
+#define NUMBER_OF_LEDS 45
 #define DATA_PIN 10
-#define BTN_1 8
-#define HEARTBEATDELAY 5
+#define BUTTON_1 8
+#define HEARTBEAT_DELAY 5
 #define DEBOUNCE 100
 
 /* EEPROM Structure
@@ -28,9 +28,9 @@
   debounce=0;
 
   Serial.begin(57600);
-  pinMode(BTN_1, INPUT_PULLUP);
+  pinMode(BUTTON_1, INPUT_PULLUP);
   Serial.print("Neustart");
-  LEDS.addLeds<WS2812,DATA_PIN,RGB>(leds,NUM_LEDS);
+  LEDS.addLeds<WS2812,DATA_PIN,RGB>(leds,NUMBER_OF_LEDS);
   LEDS.setBrightness(brightness);
   animationChoice=readIntFromEEPROM(EEPROMADDR_ANIMATION);
   checkAnimations();
@@ -59,21 +59,21 @@ void checkAnimations(){
 
 bool checkButton(){
     if((DEBOUNCE+debounce+DEBOUNCE)<millis()){
-    if(digitalRead(BTN_1)==LOW){
+    if(digitalRead(BUTTON_1)==LOW){
       if(stateButton=HIGH){
         animationChoice++;
         checkAnimations();
         writeIntIntoEEPROM(EEPROMADDR_ANIMATION, animationChoice);
-        Serial.print("BTN_1 - Animation: ");
+        Serial.print("BUTTON_1 - Animation: ");
         Serial.print(animationChoice, DEC);
         Serial.print("\n");
         debounce=millis();        
-        stateButton=digitalRead(BTN_1);
+        stateButton=digitalRead(BUTTON_1);
         return true;
       }
     }
   }
-  stateButton=digitalRead(BTN_1);
+  stateButton=digitalRead(BUTTON_1);
   return false;
 }
 
@@ -81,7 +81,7 @@ void staticColor(int hue){
   static int saturation=255;
   static int direction=0;
 
-  for(int i = 0; i < NUM_LEDS; i++) {
+  for(int i = 0; i < NUMBER_OF_LEDS; i++) {
     leds[i] = CHSV(hue, 255, saturation);  
   }
   FastLED.show();
@@ -97,5 +97,5 @@ void staticColor(int hue){
   else if(saturation <=75){
     direction =1;
   }
-  delay(HEARTBEATDELAY);
+  delay(HEARTBEAT_DELAY);
 }
