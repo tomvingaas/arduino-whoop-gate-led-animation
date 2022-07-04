@@ -24,15 +24,15 @@
  void setup() { 
   //Setup uController
   brightness = 84;
-  stateButton=HIGH;
-  debounce=0;
+  stateButton = HIGH;
+  debounce = 0;
 
   Serial.begin(57600);
   pinMode(BUTTON_1, INPUT_PULLUP);
-  Serial.print("Neustart");
-  LEDS.addLeds<WS2812,DATA_PIN,RGB>(leds,NUMBER_OF_LEDS);
+  Serial.print("start");
+  LEDS.addLeds<WS2812,DATA_PIN,RGB>(leds, NUMBER_OF_LEDS);
   LEDS.setBrightness(brightness);
-  animationChoice=readIntFromEEPROM(EEPROMADDR_ANIMATION);
+  animationChoice = readIntFromEEPROM(EEPROMADDR_ANIMATION);
   checkAnimations();
 }
 
@@ -41,61 +41,99 @@ void loop() {
   switch(animationChoice){
     case 0: staticColor(0); break;
     case 1: staticColor(64); break;
-    case 2: staticColor(96); break;     
+    case 2: staticColor(96); break;
+    case 23: pulseColor(); break;       
   }
 }
 
 void checkAnimations(){
- if(animationChoice>20||animationChoice<0){
-    animationChoice=0;    
+ if(animationChoice > 20 || animationChoice < 0){
+    animationChoice = 0;    
   }
-  else if(animationChoice>13&&animationChoice<20){
-    animationChoice=20;    
+  else if(animationChoice > 13 && animationChoice < 20){
+    animationChoice = 20;    
   }
-  else if(animationChoice>2&&animationChoice<10){
-    animationChoice=10;
+  else if(animationChoice > 2 && animationChoice < 10){
+    animationChoice = 10;
   }
 }
 
 bool checkButton(){
-    if((DEBOUNCE+debounce+DEBOUNCE)<millis()){
-    if(digitalRead(BUTTON_1)==LOW){
-      if(stateButton=HIGH){
-        animationChoice++;
-        checkAnimations();
-        writeIntIntoEEPROM(EEPROMADDR_ANIMATION, animationChoice);
-        Serial.print("BUTTON_1 - Animation: ");
-        Serial.print(animationChoice, DEC);
-        Serial.print("\n");
-        debounce=millis();        
-        stateButton=digitalRead(BUTTON_1);
-        return true;
-      }
+    if((DEBOUNCE + debounce + DEBOUNCE) < millis()){
+        if(digitalRead(BUTTON_1) == LOW){
+            if(stateButton = HIGH){
+                animationChoice++;
+                checkAnimations();
+                writeIntIntoEEPROM(EEPROMADDR_ANIMATION, animationChoice);
+                
+                Serial.print("BUTTON_1 - Animation: ");
+                Serial.print(animationChoice, DEC);
+                Serial.print("\n");
+                
+                debounce = millis();        
+                stateButton = digitalRead(BUTTON_1);
+                return true;
+            }
+        }
     }
-  }
-  stateButton=digitalRead(BUTTON_1);
-  return false;
+    stateButton = digitalRead(BUTTON_1);
+    return false;
 }
 
 void staticColor(int hue){
-  static int saturation=255;
-  static int direction=0;
+    int saturation = 255;
+    int direction = 0;
 
-  for(int i = 0; i < NUMBER_OF_LEDS; i++) {
-    leds[i] = CHSV(hue, 255, saturation);  
-  }
-  FastLED.show();
-  if(direction==0){
-    saturation--;
-  }
-  else{
-    saturation++;
-  }
-  if(saturation>=255){
-    direction = 0;
-  }
-  else if(saturation <=75){
-    direction =1;
-  }
-  delay(HEARTBEAT_DELAY);
+    for(int i = 0; i < NUMBER_OF_LEDS; i++) {
+        leds[i] = CHSV(hue, 255, saturation);  
+    }
+
+    FastLED.show();
+
+    if(direction == 0){
+        saturation--;
+    }else{
+        saturation++;
+    }
+
+    if(saturation >= 255){
+        direction = 0;
+    }else if(saturation <= 75){
+        direction = 1;
+    }
+    
+    delay(HEARTBEAT_DELAY);
+}
+
+void pulseColor(){
+    int hue = 0;
+    int hueDelay = 0;
+    int saturation = 255;
+    int direction = 0;
+
+    for(int i = 0; i < NUM_LEDS; i++) {
+        leds[i] = CHSV(hue, 255, saturation);  
+    }
+    
+    FastLED.show();
+    
+    if(direction == 0){
+        saturation--;
+    }else{
+        saturation++;
+    }
+    
+    if(saturation >= 255){
+        direction = 0;
+    }else if(saturation <= 75){
+        direction = 1;
+    }
+    
+    hueDelay++;
+
+    if(hueDelay > 10){
+        hue++;
+        hueDelay = 0;
+    }
+    delay(HEARTBEAT_DELAY);
 }
